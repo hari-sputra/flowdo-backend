@@ -1,0 +1,966 @@
+{
+	"info": {
+		"_postman_id": "flowdo-api-collection",
+		"name": "FlowDo API",
+		"description": "FlowDo Backend API Collection — Laravel 13 + Sanctum (Cookie-based SPA Authentication)\n\n## Cara Pakai\n1. Jalankan `CSRF Cookie` terlebih dahulu untuk mendapatkan XSRF-TOKEN.\n2. Jalankan `Register` atau `Login` untuk autentikasi.\n3. Postman otomatis menyimpan cookie session, sehingga request selanjutnya sudah terotentikasi.\n4. Variable `taskId` dan `tagId` otomatis ter-set dari response `Create Task` dan `Create Tag`.\n\n## Base URL\nDefault: `http://127.0.0.1:8000`",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://127.0.0.1:8000",
+			"type": "string"
+		},
+		{
+			"key": "taskId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "tagId",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "🔐 Authentication",
+			"description": "Endpoint autentikasi: CSRF cookie, register, login, logout, dan cek user session.",
+			"item": [
+				{
+					"name": "CSRF Cookie",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Referer",
+								"value": "{{baseUrl}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/sanctum/csrf-cookie",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"sanctum",
+								"csrf-cookie"
+							]
+						},
+						"description": "Ambil XSRF-TOKEN cookie dari Sanctum. Harus dipanggil SEBELUM register/login agar Postman menyimpan cookie CSRF."
+					},
+					"response": []
+				},
+				{
+					"name": "Register",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    pm.test('Register berhasil', function () {",
+									"        var json = pm.response.json();",
+									"        pm.expect(json).to.have.property('id');",
+									"        pm.expect(json).to.have.property('name');",
+									"        pm.expect(json).to.have.property('email');",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Referer",
+								"value": "{{baseUrl}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Hari Sputra\",\n    \"email\": \"hari@flowdo.app\",\n    \"password\": \"password\",\n    \"password_confirmation\": \"password\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"register"
+							]
+						},
+						"description": "Daftarkan user baru. Otomatis membuat 4 default tags (Work, Personal, Study, Fitness) dan langsung login."
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    pm.test('Login berhasil', function () {",
+									"        var json = pm.response.json();",
+									"        pm.expect(json).to.have.property('id');",
+									"        pm.expect(json).to.have.property('email');",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Referer",
+								"value": "{{baseUrl}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"hari@flowdo.app\",\n    \"password\": \"password\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"login"
+							]
+						},
+						"description": "Login dan mulai session. Cookie session otomatis disimpan oleh Postman."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Current User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('User data diterima', function () {",
+									"    pm.response.to.have.status(200);",
+									"    var json = pm.response.json();",
+									"    pm.expect(json).to.have.property('id');",
+									"    pm.expect(json).to.have.property('name');",
+									"    pm.expect(json).to.have.property('email');",
+									"    pm.expect(json).to.have.property('avatarUrl');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Referer",
+								"value": "{{baseUrl}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/user",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"user"
+							]
+						},
+						"description": "Ambil data user yang sedang login. Mengembalikan 401 jika belum login."
+					},
+					"response": []
+				},
+				{
+					"name": "Logout",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Logout berhasil (204)', function () {",
+									"    pm.response.to.have.status(204);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Referer",
+								"value": "{{baseUrl}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/logout",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"logout"
+							]
+						},
+						"description": "Logout dan invalidate session. Setelah ini, request ke endpoint protected akan mengembalikan 401."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "📋 Tasks",
+			"description": "CRUD task lengkap dengan sorting, filtering, toggle status 3-state, dan due-today filter.",
+			"item": [
+				{
+					"name": "List All Tasks",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Task list diterima', function () {",
+									"    pm.response.to.have.status(200);",
+									"    var json = pm.response.json();",
+									"    pm.expect(json).to.have.property('data');",
+									"    pm.expect(json.data).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Referer",
+								"value": "{{baseUrl}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/tasks",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"tasks"
+							]
+						},
+						"description": "Ambil semua task milik user yang login. Mendukung sorting dan filtering via query params."
+					},
+					"response": []
+				},
+				{
+					"name": "List Tasks — Sort by Priority DESC",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Referer",
+								"value": "{{baseUrl}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/tasks?sort_by=priority&sort_direction=desc",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"tasks"
+							],
+							"query": [
+								{
+									"key": "sort_by",
+									"value": "priority"
+								},
+								{
+									"key": "sort_direction",
+									"value": "desc"
+								}
+							]
+						},
+						"description": "Sorting berdasarkan priority secara descending. Opsi sort_by: due_date, title, priority."
+					},
+					"response": []
+				},
+				{
+					"name": "List Tasks — Filter by Status (todo)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Referer",
+								"value": "{{baseUrl}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/tasks?status=todo",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"tasks"
+							],
+							"query": [
+								{
+									"key": "status",
+									"value": "todo",
+									"description": "Options: todo, inprogress, completed"
+								}
+							]
+						},
+						"description": "Filter tasks berdasarkan status. Opsi: todo, inprogress, completed."
+					},
+					"response": []
+				},
+				{
+					"name": "List Tasks — Filter by Tag",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Referer",
+								"value": "{{baseUrl}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/tasks?tag=Work",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"tasks"
+							],
+							"query": [
+								{
+									"key": "tag",
+									"value": "Work",
+									"description": "Filter by tag name (case-sensitive)"
+								}
+							]
+						},
+						"description": "Filter tasks berdasarkan nama tag. Case-sensitive."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Tasks Due Today",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Due today tasks diterima', function () {",
+									"    pm.response.to.have.status(200);",
+									"    var json = pm.response.json();",
+									"    pm.expect(json).to.have.property('data');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Referer",
+								"value": "{{baseUrl}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/tasks/due-today",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"tasks",
+								"due-today"
+							]
+						},
+						"description": "Ambil task yang jatuh tempo hari ini dan belum selesai (status != done)."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Task",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var json = pm.response.json();",
+									"    pm.collectionVariables.set('taskId', json.id);",
+									"    pm.test('Task berhasil dibuat', function () {",
+									"        pm.expect(json).to.have.property('id');",
+									"        pm.expect(json).to.have.property('title');",
+									"        pm.expect(json).to.have.property('tags');",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Referer",
+								"value": "{{baseUrl}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Review project documentation\",\n    \"description\": \"Review and update all project docs before deadline\",\n    \"dueDate\": \"2026-05-25\",\n    \"priority\": \"high\",\n    \"tags\": [\"Work\", \"Study\"]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/tasks",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"tasks"
+							]
+						},
+						"description": "Buat task baru. Field `tags` berisi array nama tag. Variable `taskId` otomatis ter-set dari response."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Task — Minimal (title + dueDate only)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Referer",
+								"value": "{{baseUrl}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Quick task\",\n    \"dueDate\": \"2026-05-22\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/tasks",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"tasks"
+							]
+						},
+						"description": "Buat task dengan data minimal. Priority default ke 'medium', status default ke 'to-do'."
+					},
+					"response": []
+				},
+				{
+					"name": "Show Task",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Task detail diterima', function () {",
+									"    pm.response.to.have.status(200);",
+									"    var json = pm.response.json();",
+									"    pm.expect(json).to.have.property('id');",
+									"    pm.expect(json).to.have.property('tags');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Referer",
+								"value": "{{baseUrl}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/tasks/{{taskId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"tasks",
+								"{{taskId}}"
+							]
+						},
+						"description": "Ambil detail satu task beserta tags-nya. Mengembalikan 403 jika bukan milik user."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Task",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Task berhasil diupdate', function () {",
+									"    pm.response.to.have.status(200);",
+									"    var json = pm.response.json();",
+									"    pm.expect(json.title).to.eql('Updated task title');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Referer",
+								"value": "{{baseUrl}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Updated task title\",\n    \"description\": \"Updated description with more details\",\n    \"priority\": \"urgent\",\n    \"tags\": [\"Work\"]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/tasks/{{taskId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"tasks",
+								"{{taskId}}"
+							]
+						},
+						"description": "Update task. Semua field opsional (partial update). Tags akan di-sync ulang."
+					},
+					"response": []
+				},
+				{
+					"name": "Toggle Task Status",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Task status berhasil di-toggle', function () {",
+									"    pm.response.to.have.status(200);",
+									"    var json = pm.response.json();",
+									"    pm.expect(json).to.have.property('status');",
+									"    console.log('New status: ' + json.status);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Referer",
+								"value": "{{baseUrl}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/tasks/{{taskId}}/toggle",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"tasks",
+								"{{taskId}}",
+								"toggle"
+							]
+						},
+						"description": "Toggle status task: to-do → in-progress → done → to-do. Field `completedAt` otomatis di-manage."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Task",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Task berhasil dihapus (204)', function () {",
+									"    pm.response.to.have.status(204);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Referer",
+								"value": "{{baseUrl}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/tasks/{{taskId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"tasks",
+								"{{taskId}}"
+							]
+						},
+						"description": "Hapus task beserta relasi pivot-nya. Tag tidak ikut terhapus."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "🏷️ Tags",
+			"description": "CRUD tag dengan proteksi default tag. Default tag (Work, Personal, Study, Fitness) tidak bisa diubah/dihapus.",
+			"item": [
+				{
+					"name": "List All Tags",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Tag list diterima', function () {",
+									"    pm.response.to.have.status(200);",
+									"    var json = pm.response.json();",
+									"    pm.expect(json.data).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Referer",
+								"value": "{{baseUrl}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/tags",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"tags"
+							]
+						},
+						"description": "Ambil semua tag milik user (termasuk 4 default tag)."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Custom Tag",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var json = pm.response.json();",
+									"    pm.collectionVariables.set('tagId', json.id);",
+									"    pm.test('Tag berhasil dibuat', function () {",
+									"        pm.expect(json).to.have.property('id');",
+									"        pm.expect(json.isDefault).to.eql(false);",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Referer",
+								"value": "{{baseUrl}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Side Project\",\n    \"color\": \"#10B981\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/tags",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"tags"
+							]
+						},
+						"description": "Buat custom tag baru. `isDefault` otomatis false. Variable `tagId` otomatis ter-set dari response."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Tag — Duplicate Name (expect 422)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Referer",
+								"value": "{{baseUrl}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Work\",\n    \"color\": \"#FF0000\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/tags",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"tags"
+							]
+						},
+						"description": "Coba buat tag dengan nama yang sudah ada. Harus mengembalikan 422 validation error."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Custom Tag",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Tag berhasil diupdate', function () {",
+									"    pm.response.to.have.status(200);",
+									"    var json = pm.response.json();",
+									"    pm.expect(json.name).to.eql('Renamed Tag');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Referer",
+								"value": "{{baseUrl}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Renamed Tag\",\n    \"color\": \"#EF4444\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/tags/{{tagId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"tags",
+								"{{tagId}}"
+							]
+						},
+						"description": "Update custom tag. Mengembalikan 403 jika mencoba update default tag."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Custom Tag",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Tag berhasil dihapus (204)', function () {",
+									"    pm.response.to.have.status(204);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Referer",
+								"value": "{{baseUrl}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/tags/{{tagId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"tags",
+								"{{tagId}}"
+							]
+						},
+						"description": "Hapus custom tag. Mengembalikan 403 jika mencoba hapus default tag. Pivot rows otomatis terhapus, task tetap ada."
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

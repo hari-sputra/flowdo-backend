@@ -25,3 +25,8 @@ _ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
+route_list.txt
+temp_error.txt
+test_sanctum.php
+check_bom.php
+check_whitespace.php
