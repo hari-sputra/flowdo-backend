@@ -1,0 +1,59 @@
+services:
+  # 1. Database PostgreSQL
+  db:
+    image: postgres:16-alpine
+    container_name: flowdo_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: flowdo
+      POSTGRES_USER: flowdo_user
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-secret}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U flowdo_user -d flowdo"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # 2. PHP-FPM Backend Application
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: flowdo_api
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_CONNECTION: pgsql
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_DATABASE: flowdo
+      DB_USERNAME: flowdo_user
+      DB_PASSWORD: ${DB_PASSWORD:-secret}
+      APP_ENV: local
+      APP_DEBUG: 'true'
+    volumes:
+      - .:/var/www/html
+      - api-storage:/var/www/html/storage
+
+  # 3. Nginx Web Server / Reverse Proxy
+  webserver:
+    image: nginx:alpine
+    container_name: flowdo_webserver
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    volumes:
+      - .:/var/www/html
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - api
+
+volumes:
+  pgdata:
+  api-storage:
